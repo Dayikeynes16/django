@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <title>Cuenta</title>
+  <meta charset="utf-8">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="{% static 'estilo.css' %}">
+</head>
+
+<body>
+  <nav class="navegador">
+    <img src="../static/imagenes/logo puebla 2.0 - copia.jpg" alt="Logo" style="width:150px;">
+    <div class="botones-navegacion">
+        <ul class="nav separacion">
+            <li class="nav-item">
+                <a class="btn btn-primary nav-link" href="/ventas">Ventas</a>
+            </li>
+            <li class="nav-item">
+                <a class="btn btn-primary nav-link" href="/historial">Historial</a>
+            </li>
+            <li class="nav-item">
+                <a class="btn btn-primary nav-link" href="/inventario">inventario</a>
+            </li>
+            <li class="nav-item">
+                <a class="btn btn-primary nav-link" href="/devoluciones">Devoluciones</a>
+            </li>
+            <li class="nav-item">
+                <a class="btn btn-primary nav-link" href="/proveedores">Proveedores</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+    <div class = "container main-center">
+
+
+<div id="registration_section">
+  <h2>Registro de Usuario</h2>
+  <form method="post" action="{% url 'manage_account' %}">
+      {% csrf_token %}
+      {{ registration_form.as_p }}
+      <button class="btn-primary" type="submit" name="register_submit"> Registrar </button>
+  </form>
+</div>
+
+<!-- Sección de Actualización de Datos de Usuario -->
+<div id="update_section">
+  <h2>Actualizar Datos de Usuario</h2>
+  <form method="post" action="{% url 'manage_account' %}">
+      {% csrf_token %}
+      {{ update_form.as_p }}
+      <button class="btn-primary" type="submit" name="update_submit">Actualizar</button>
+
+  </form>
+</div>
+
+<!-- Sección de Cambio de Contraseña -->
+<div id="password_change_section">
+  <h2>Cambiar Contraseña</h2>
+  <form method="post" action="{% url 'manage_account' %}">
+      {% csrf_token %}
+      {{ password_change_form.as_p }}
+      <button class="btn-primary" type= "submit" name="password_change_submit"> Cambiar Contraseña</button>
+  </form>
+</div>
+
+<div>
+  <a class="btn btn-primary" href="{% url 'logout' %}">Cerrar Sesión</a>
+
+
+</div>
+</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-JwYeM7tpHp0lmj07qicxWlI9raBXQgRBt6tkHs6IwU0wYV5Sb+CIlCrfe/h5n7yx" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <title>Proveedores</title>
+  <meta charset="utf-8">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="../static/estilo.css">
+</head>
+<body>
+  <nav class="navegador">
+    <img src="../static/imagenes/logo puebla 2.0 - copia.jpg" alt="Logo" style="width:150px;">
+    <div class="botones-navegacion">
+        <ul class="nav separacion">
+            <li class="nav-item">
+                <a class="btn btn-primary nav-link" href="/ventas">Ventas</a>
+            </li>
+            <li class="nav-item">
+                <a class="btn btn-primary nav-link" href="/historial">Historial</a>
+            </li>
+            <li class="nav-item">
+                <a class="btn btn-primary nav-link" href="/cuenta">Cuenta</a>
+            </li>
+            <li class="nav-item">
+                <a class="btn btn-primary nav-link" href="/devoluciones">Devoluciones</a>
+            </li>
+            <li class="nav-item">
+            </li>
+            <li class="nav-item">
+              <a class="btn btn-primary nav-link" href="/inventario">Inventario</a>
+        </ul>
+    </div>
+</nav>
+
+
+ 
+    <div class="container flex-container">
+      <h2>Ingresos Anteriores:</h2>
+      <div class = "rectangle rectangle-large">
+      <table class="table table-bordered">
+          <thead class="table-dark">
+              <tr>
+                <th>Producto</th>
+                <th>Fecha de Adquisición</th>
+                <th>Proveedor</th>  
+                <th>Cantidad</th>
+                <th>Precio por Unidad</th>
+                <th>Total</th>
+              </tr>
+          </thead>
+          {% for suministro in Suministro_list %}
+
+          <tbody>
+              <td>{{suministro.nombre_producto}}</td>
+              <td>{{suministro.fecha}}</td>
+              <td>{{suministro.proveedor}}</td>
+              <td>{{suministro.cantidad}}</td>
+              <td>{{suministro.precio_unitario}}</td>
+              <td>{{suministro.total}}</td>
+         
+          </tbody>
+          {% endfor %}
+      </table>
+      <a id = "mostrarFormulario" class="btn btn-primary nav-link" >nuevo Ingreso</a>
+      </div>
+  </div>
+
+<div class = "container">
+  <div id="miFormulario" style="display: none;" autocomplete = 'OFF' class = "agreg">
+    <form method="POST" action="{% url 'add_suministro' %}">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="btn btn-primary nav-link" type="submit">Guardar</button>
+    </form>
+  </div>
+</div>
+<script>
+  document.getElementById("mostrarFormulario").addEventListener("click", function() {
+    var form = document.getElementById("miFormulario");
+    if (form.style.display === "none") {
+      form.style.display = "block";
+    } else {
+      form.style.display = "none";
+    }
+  });
+  </script>
+
+</body>
+</html>
+  </body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ventas del Día</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px;
+            width: 100%;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Resumen de ventas del día</h1>
+    <p>Total vendido: ${{ total_vendido }}</p>
+    <p>Ventas en efectivo: ${{ total_efectivo }}</p>
+    <p>Ventas con tarjeta: ${{ total_tarjeta }}</p>
+    <p>Ventas por transferencia: ${{ total_transferencia }}</p>
+
+    <h2>Listado de ventas</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID de Venta</th>
+                <th>Fecha</th>
+                <th>Total</th>
+                <th>Método de Pago</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for venta in ventas_del_dia %}
+            <tr>
+                <td>{{ venta.id_venta }}</td>
+                <td>{{ venta.fecha }}</td>
+                <td>${{ venta.total }}</td>
+                <td>{{ venta.get_metodo_de_pago_display }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
