@@ -5,9 +5,10 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+from datetime import datetime
 
 
-
+    
 
 def generar_id_venta():
     return random.randint(10000, 99999)
@@ -15,8 +16,7 @@ def generar_id_venta():
 
 
 class Producto(models.Model):
-    id_producto = models.AutoField(primary_key=True)
-    categoria = models.ForeignKey('Categoria', on_delete=models.CASCADE)
+    id_producto = models.BigAutoField(primary_key=True)
     nombre = models.CharField(max_length=25)
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.DecimalField(max_digits=10, decimal_places=2)
@@ -24,11 +24,7 @@ class Producto(models.Model):
         return self.nombre + " " 
 
 
-class Categoria(models.Model):
-    id_categoria = models.AutoField(primary_key=True)
-    nombre_categoria = models.CharField(max_length=30)
-    def __str__(self):
-        return self.nombre_categoria
+
 
 class Venta(models.Model):
     id_venta = models.AutoField(primary_key=True, default=generar_id_venta)

@@ -1,24 +1,24 @@
 from django import forms
 from .models import Producto, Venta, ProductoVenta, Suministro, Devolucion
 from django.utils import timezone
+from django.contrib.auth.models import User
 class DateInput(forms.DateInput):
     input_type = 'date'
 
 class AñadirProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
-        fields = ['nombre', 'precio', 'stock', 'categoria']
+        fields = ['nombre', 'precio', 'stock']
         labels = {
             'nombre': 'Nombre',
             'precio': 'Precio',
             'stock': 'Stock',
-            'categoria': 'Categoria',
         }
         widgets = { 
             'nombre': forms.TextInput(attrs={'class':'form-control'}),
             'precio': forms.NumberInput(attrs={'class':'form-control'}),
             'stock': forms.NumberInput(attrs={'class':'form-control'}),
-            'categoria': forms.Select(attrs={'class':'form-control'}),
+            
         }
 
 from django.contrib.auth.models import User
@@ -64,7 +64,6 @@ class VentaForm(forms.ModelForm):
         model = Venta
         exclude = ['fecha_venta']
 
-
 class VentasProductoForm(forms.ModelForm):
     cantidad_producto = forms.DecimalField(widget=forms.NumberInput(attrs={'class':'form-control', 'step': 'any'}))
     class Meta:
@@ -76,9 +75,10 @@ class VentasProductoForm(forms.ModelForm):
     
         }
         widgets = {
-            'producto': forms.Select(attrs={'class':'form-control'}),
+            'producto': forms.SelectMultiple(attrs={'class':'form-control'}),
         }
 
+        
 
 class Suministroform(forms.ModelForm):
     cantidad = forms.IntegerField(widget=forms.NumberInput(attrs={'class':'form-control'}))
