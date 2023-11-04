@@ -6,7 +6,20 @@
   height: 100%;
   font-family: 'Roboto', sans-serif;
 }
+
+.card{
+  margin-top: 10px;
+  height: 100%;
+
+}
+
+#map {
+  height: 400px; /* Ajusta la altura según tus necesidades */
+  width: 100%; /* O ajusta el ancho según tus necesidades */
+}
+
 .prueba{
+  margin-top: 10px;
   display: flex;
   width: 100%;
 }
@@ -14,7 +27,7 @@
   padding: 0%;
   margin: 15px;
   display: flex;
-align-items: center;
+  width: 100%;
 
 }
 .login-header{
@@ -38,9 +51,7 @@ justify-content: center;
 .devolucion-info{
 padding: 5px;
 margin: 5px;
-display: flex;
-justify-content: center;
-align-items: center;
+
 
 }
 
@@ -79,20 +90,20 @@ align-items: center;
   justify-content: center;
 }
 .tablaproductos{
+  margin-top: 10px;
   margin: 0;
   padding: 0;
   width: 65%;
-
+  height: 100%;
   border-collapse: collapse;
-  border: 1px solid #ccc;
+ 
 }
 
 .seccion-pago{
-  display: flex;
   margin: 0;
   padding: 0;
   width: 35%;
-  border: #ccc 1px solid;
+
 }
 
 .total-venta{
@@ -106,7 +117,7 @@ align-items: center;
   display: flex;
   flex-direction: column;
   width: 100%;
-  justify-content: center;
+  padding: 20px;
 }
 
 
@@ -121,7 +132,7 @@ align-items: center;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  background-color: #EA5455;
+  background-color: wheat ;
   padding: 10px 20px;
 }
 
@@ -139,6 +150,7 @@ align-items: center;
   margin: 10px;
 
 }
+
 
 .navbar-nav {
   display: inline-flex;

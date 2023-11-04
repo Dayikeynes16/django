@@ -1,24 +1,23 @@
-from django.urls import path
-from django.http import HttpResponse, JsonResponse
-from myapp.models import  Categoria, Producto, Venta , Suministro, ProductoVenta, Devolucion, User
+from myapp.models import  Producto, Venta , Suministro, ProductoVenta, Devolucion
 from django.shortcuts import render,redirect, get_object_or_404
-from .form import AñadirProductoForm, VentaForm, VentasProductoForm, Suministroform, DevolucionForm, BuscarVentaForm, FiltrarVentasForm, UserRegistrationForm, UserUpdateForm, PasswordChangeForm, BuscarVentaForm
+from .form import AñadirProductoForm, VentaForm, VentasProductoForm, Suministroform, DevolucionForm, BuscarVentaForm, UserRegistrationForm, UserUpdateForm, PasswordChangeForm, BuscarVentaForm
 from django.utils import timezone
 from io import BytesIO
 from reportlab.pdfgen import canvas
-from django.http import FileResponse
+from django.http import FileResponse, JsonResponse
 from django.db.models import Sum
 from reportlab.lib import colors
-from reportlab.platypus import Table, TableStyle, PageBreak, Spacer
-from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import Table, TableStyle
+from reportlab.lib.pagesizes import letter
 from django.contrib import messages
 from decimal import Decimal
 from django.contrib.auth.decorators import login_required
-from datetime import date
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
 from reportlab.lib.units import inch
+from django.conf import settings
+import requests
+import os
 
 
 def ventas_pdf(request):
@@ -89,11 +88,13 @@ def ventas_pdf(request):
     response = FileResponse(buffer, content_type='application/pdf')
     response['Content-Disposition'] = 'inline; filename="ventas.pdf"'
 
-    return response
+    return response 
 
 @login_required
 def ventas(request):
-  
+
+    productos = Producto.objects.all()
+
     venta_form = VentaForm(request.POST or None)  # Inicializamos por defecto
     ventas_producto_form = VentasProductoForm()  # Inicializamos por defecto
 
@@ -159,9 +160,11 @@ def ventas(request):
                         venta_actual.metodo_de_pago = venta_form.cleaned_data['metodo_de_pago']
                         venta_actual.abierta = False
                         venta_actual.save()
-                    
-                        messages.success(request, "Venta finalizada.")
-                        return generar_ticket_pdf(venta_actual, productos_venta)  # Genera y devuelve el ticket en formato PDF
+                
+                        ticket_url = generar_ticket_pdf(venta_actual, productos_venta)  # Generar el PDF y obtener la URL
+                        messages.success(request, f"Venta finalizada. <a href='{ticket_url}' target='_blank'>Descargar Ticket</a>")  # Mensaje de éxito con enlace para descargar
+                
+                        return redirect('ventas')
                     else:
                         messages.error(request, "Error al finalizar la venta. Por favor, selecciona un método de pago.")
             return redirect('ventas')
@@ -175,37 +178,59 @@ def ventas(request):
         'productos_venta': productos_venta,
         'total_venta': total_venta,
         'venta_actual': venta_actual,
+        'productos_list': productos,
+
     })
 
 
 def generar_ticket_pdf(venta, productos_venta):
+    # Configurar el tamaño de la página para 58mm
+    page_width = 58 / 25.4 * inch  # Convertir mm a pulgadas, luego a puntos
+    page_height = 11 * inch  # La longitud es variable
+    page_size = (page_width, page_height)
+
     # Crear un objeto BytesIO para guardar el PDF
     buffer = BytesIO()
 
-    # Crear un objeto canvas para dibujar en el buffer
-    p = canvas.Canvas(buffer)
+    # Crear un objeto canvas para dibujar en el buffer con el tamaño de página ajustado
+    p = canvas.Canvas(buffer, pagesize=page_size)
 
-    # Dibuja el contenido del ticket (esto es solo un ejemplo simple)
-    p.drawString(100, 750, "CARNICERÍA - TICKET DE VENTA")
-    p.drawString(100, 735, f"ID de Venta: {venta.id_venta}")
-    p.drawString(100, 720, f"Fecha: {venta.fecha}")
-    p.drawString(100, 700, "Productos:")
+    # Margen izquierdo
+    left_margin = 6  # 6 puntos es un pequeño margen pero visible en una impresora térmica
 
-    # Dibuja los productos
-    y_position = 685
+    # Dibuja el contenido del ticket con el margen izquierdo
+    p.drawString(left_margin, page_height - 40, "Puebla")
+    p.drawString(left_margin, page_height - 55, f"ID de Venta: {venta.id_venta}")
+    p.drawString(left_margin, page_height - 70, f"Fecha: {venta.fecha.strftime('%d/%m/%Y %H:%M')}")
+    p.drawString(left_margin, page_height - 90, "Productos:")
+
+    # Dibuja los productos ajustando el ancho
+    y_position = page_height - 105
     for producto_venta in productos_venta:
-        p.drawString(100, y_position, f"{producto_venta.producto.nombre} - {producto_venta.cantidad_producto} - ${producto_venta.subtotal_producto}")
+        p.drawString(left_margin, y_position, f"{producto_venta.producto.nombre} - {producto_venta.cantidad_producto}kg - ${producto_venta.subtotal_producto}")
         y_position -= 15
-    p.drawString(100, y_position - 20, f"Total: ${venta.total}")
+    p.drawString(left_margin, y_position - 20, f"Total: ${venta.total}")
+
     # Finaliza el dibujo en el canvas
     p.showPage()
     p.save()
 
     # Mover el buffer al comienzo para leerlo
     buffer.seek(0)
+    filename = f"ticket_{venta.id_venta}.pdf"
+    filepath = os.path.join(settings.MEDIA_ROOT, 'tickets', filename)
+    directory = os.path.dirname(filepath)
 
-    # Devuelve el PDF como respuesta HTTP
-    return FileResponse(buffer, as_attachment=True, filename='ticket.pdf')
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    with open(filepath, 'wb') as f:
+        f.write(buffer.getvalue())
+    
+    # Asegurarse de cerrar el buffer
+    buffer.close()
+
+    # Devuelve la ruta al PDF
+    return os.path.join(settings.MEDIA_URL, 'tickets', filename)
 
 
 def add_product(request):
@@ -311,7 +336,7 @@ def add_suministro(request):
 
 @login_required
 def inventario(request,id_producto=None):
-    categorias_list = Categoria.objects.all()
+    
     productos_list = Producto.objects.all() 
     if id_producto is not None:
         producto = get_object_or_404(Producto, pk=id_producto)
@@ -326,7 +351,7 @@ def inventario(request,id_producto=None):
             return redirect('.')
     else:
         form = AñadirProductoForm()
-    context = {'productos_list': productos_list, 'categorias_list': categorias_list, 'form': form}
+    context = {'productos_list': productos_list, 'form': form}
     return render(request, 'inventario.html', context)
 
 @login_required
@@ -411,6 +436,30 @@ def devoluciones(request):
         'devoluciones_list': devoluciones_list
     }
     return render(request,'devoluciones.html', context)
+
+def mapa (request):
+    if request.method == 'POST':
+        city_name = request.POST.get('city_name')
+        api_key = 'TU_CLAVE_DE_API_OPENWEATHERMAP'  # Reemplaza con tu clave de API
+        url = f'https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={api_key}'
+
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            data = response.json()
+            temperature = data['main']['temp']
+            weather_description = data['weather'][0]['description']
+            context = {
+                'city_name': city_name,
+                'temperature': temperature,
+                'weather_description': weather_description,
+            }
+            return render(request, 'weather/result.html', context)
+        else:
+            error_message = 'No se encontraron datos para la ciudad especificada.'
+            return render(request, 'weather/search.html', {'error_message': error_message})
+
+    return render(request, 'mapa.html')
 
 @login_required
 def home(request):
@@ -525,5 +574,78 @@ def procesar_devolucion(request, id_venta):
     else:
         form = DevolucionForm(initial={'venta': venta})
     return render(request, 'devoluciones', {'venta': venta, 'productos_venta': productos_venta, 'form': form})
+
+def pedidos(request):
+    return render (request,'pedidos.html')
+
+#def añadir_producto (request):
+    #venta_actual = Venta.objects.filter(abierta=True).first()
+    #cuantity = request.POST ["txt-cantidad"]
+   # name = request.POST ["txt-producto"]
+   # Prod =  ProductoVenta.objects.create(Producto = name, cantidad_producto = cuantity, venta = venta_actual )
+
+   # return redirect ("ventas/" )
+
+def añadir_producto(request):
+    if request.method == 'POST':
+        datos_formulario = request.POST
+        venta_actual = Venta.objects.filter(abierta=True).first()
+
+        # Si no hay venta abierta, crear una nueva venta
+        if not venta_actual:
+            venta_actual = Venta.objects.create(abierta=True)
+
+        # Obtiene el nombre del producto y la cantidad del formulario
+        nombre_producto = datos_formulario['txt-producto']
+        cantidad_producto = Decimal(datos_formulario['txt-cantidad'])
+
+        # Crea un objeto ProductoVenta y lo asocia con el producto y la venta actual
+        producto_venta = ProductoVenta(
+            producto=Producto.objects.get(nombre=nombre_producto),
+            cantidad_producto=cantidad_producto,
+            venta=venta_actual,
+        )
+
+        # Guarda el objeto ProductoVenta en la base de datos
+        producto_venta.save()
+        return redirect('ventas')
+
+from django.shortcuts import get_object_or_404, redirect
+from django.http import JsonResponse
+from decimal import Decimal
+from .models import Producto, ProductoVenta, Venta
+from django.db.models import Q
+from django.contrib import messages
+
+def procesar_codigo_barras(request):
+    if request.method == 'POST':
+        codigo_barras = request.POST.get('codigo_barras')
+        id_producto = int(codigo_barras[:6])
+        peso = Decimal(int(codigo_barras[6:11])) / 100  # Convertir a kilogramos
+        producto = get_object_or_404(Producto, pk=id_producto)
+
+        # Comprobar si existe una venta abierta
+        venta_actual = Venta.objects.filter(abierta=True).first()
+        if not venta_actual:
+            # Si no hay venta abierta, crear una nueva
+            venta_actual = Venta.objects.create(abierta=True)
+
+        if producto.stock < peso:
+            messages.error(request, f"No hay suficiente stock de {producto.nombre}. Solo hay {producto.stock} kilos disponibles.")
+            return redirect('ventas')
+
+        # Crear y guardar el ProductoVenta
+        producto_venta = ProductoVenta(producto=producto, cantidad_producto=peso, venta=venta_actual)
+        producto_venta.save()
+
+        # Actualizar el stock del producto
+        producto.stock -= peso
+        producto.save()
+
+        messages.success(request, "Producto añadido correctamente a la venta.")
+        return redirect('ventas')
+    else:
+        messages.error(request, "Solicitud inválida.")
+        return redirect('ventas')
 
 

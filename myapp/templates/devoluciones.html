@@ -67,9 +67,9 @@
   
   <tr id="miFormulario-{{Devolucion.id_devolucion}}" style="display: none;">
      
-      <td colspan="5">
+      <td>
              <h3 style="font-size: medium;">informacion de la devolución de la venta {{Devolucion.id_devolucio}}</h3>
-         <table class="table table-bordered">
+         <table class="table ">
                      <thead class="table">
                          <tr>
                              <th>Nombre</th>
@@ -134,7 +134,7 @@
    <div class="container">
     {{ forms.as_p }}
    </div>
-   <button type="submit">Procesar Devolución</button>
+   <button class="btn btn-primary nav-link" type="submit">Procesar Devolución</button>
   </form>
   {% endif %}
 </div>

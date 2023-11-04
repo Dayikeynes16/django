@@ -6,27 +6,33 @@
 <meta charset="utf-8">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
 <link rel="stylesheet" type="text/css" href="../static/estilo.css">
+</meta>
 </head>
 <body>
    
 <nav class="navegador">
-    <img src="../static/imagenes/logo puebla 2.0 - copia.jpg" alt="Logo" style="width:150px;">
+    <img src="../static/imagenes/logo.png" alt="Logo" style="width:150px;">
       <div class="botones-navegacion">
             <ul class="nav separacion">
-                <li class="nav-item">
-                    <a class="btn btn-primary nav-link" href="/inventario">Inventario</a>
-                </li>
+                
                 <li class="nav-item">
                     <a class="btn btn-primary nav-link" href="/historial">Historial</a>
                 </li>
                 <li class="nav-item">
-                    <a class="btn btn-primary nav-link" href="/cuenta">Cuenta</a>
+                    <a class="btn btn-primary nav-link" href="/inventario">Inventario</a>
                 </li>
+                
                 <li class="nav-item">
                     <a class="btn btn-primary nav-link" href="/devoluciones">Devoluciones</a>
                  </li>
                 <li class="nav-item">
                     <a class="btn btn-primary nav-link" href="/proveedores">Proveedores</a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-primary nav-link" href="/cuenta">Cuenta</a>
+                </li>
+                <li>
+                    <a class="btn btn-primary nav-link" href="/mapa">Ventas</a>
                 </li>
             </ul>
     </div>
@@ -34,42 +40,60 @@
 
 
 
+
 <div  class="prueba">
         <div class="opciones">
             <div class="col-lg-4">
-                <h2>Productos</h2>
                 
-                    <form method="post" action="">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="start_sale">
-                        <button class="btn btn-primary" type="submit">Iniciar venta</button>
-                    </form>
-                
-                     <button class="btn btn-primary" onclick="mostrarFormulario()">Agregar producto a la lista</button>
-                
-                     <!-- Formulario para agregar productos a la venta -->
-                    <div id="formulario" style="display: none;">
-                        <form method="post" action="">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="add_product">
-                            {{ ventas_producto_form.as_p }}
-                            <button type="submit" class="btn btn-primary">añadir</button>
-                        </form>
+                   
+                    <!-- <button class="btn btn-primary"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart-plus" viewBox="0 0 16 16">
+                        <path d="M9 5.5a.5.5 0 0 0-1 0V7H6.5a.5.5 0 0 0 0 1H8v1.5a.5.5 0 0 0 1 0V8h1.5a.5.5 0 0 0 0-1H9V5.5z"/>
+                        <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0 4 2 2 0 0 0 0-4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zm3.915 10L3.102 4h10.796l-1.313 7h-8.17zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                      </svg> Agregar producto a la lista</button>
+                <br>-->
+                    <div id="formulario">
+                        <div class="card">
+                            <div class="card-body">
+                                <h2>Productos</h2>
+                                <form action="/añadir-producto/" method="post"> {% csrf_token %}
+                                    <div class="form-group">
+                                            <label for="id_producto">Producto</label>
+                                            <select class="form-control" id="id_producto" name="txt-producto">
+                                                {% for producto in productos_list %}
+                                                    <option value="{{ producto.nombre }}">{{ producto.nombre }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <br>
+                                        
+                                            <label for="cantidad_producto">Cantidad</label>
+                                            <input type="decimal" class="form-control" id="cantidad_producto" name="txt-cantidad" step="0.01" pattern="^[0-9]+\.[0-9]{1,2}$">
+                                            <br>
+                                        <div> <button type="submit" class="btn btn-primary">añadir</button> </div>
+                                    </div>
+                                </form>
+                                <br>
+
+                                <form method="post" action="{% url 'procesar_codigo' %}">
+                                    {% csrf_token %}
+                                    <input type="text" name="codigo_barras" autofocus>
+                                    <button type="submit">Procesar Código de Barras</button>
+                                </form>
+                               
+                                
+                            </div>
+                        </div>
                     </div>
-            </div>
             
-        {% if messages %}
-                <ul class="messages">
-                    {% for message in messages %}
-                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }} </li>
-                    {% endfor %}
-                </ul>
-        {% endif %}
+            {% for message in messages %}
+            <div class="{{ message.tags }}">
+                {{ message|safe }}
+            </div>
+        {% endfor %}
     </div>
 
 
-
     <div class="tablaproductos">
+        <div class ="card">
         <table class="table table-striped table-hover" >
             <thead >
                 <tr>
@@ -105,8 +129,10 @@
             </tbody>
         </table>
     </div>
+</div>
 
     <div class="seccion-pago">
+        <div class ="card">
         <div class="pago">
             <div class="total-venta">
                 <h3>Total de la Venta: ${{ total_venta }}</h3>
@@ -114,7 +140,7 @@
                 <form method="post" action="">
                     {% csrf_token %}
                     
-                    <!-- Método de Pago -->
+              
                     <div class="form-group">
                         <label for="metodo_de_pago">Método de Pago:</label>
                         {{venta_form.metodo_de_pago}}
@@ -130,55 +156,30 @@
             </div>
         </div>
     </div>
+    </div>
 </div>    
 
+<script>
+    
 
+        // Event listener para el formulario de cobro
+        var cobrarForm = document.querySelector('.total-venta form');
+        if (cobrarForm) {
+            cobrarForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // Previenes el envío por defecto
 
-
-
-
-
-
-  <script>
-    // Tu código de JavaScript aquí
-    function mostrarFormulario() {
-        var formulario = document.getElementById('formulario');
-        formulario.style.display = formulario.style.display === 'none' ? 'block' : 'none';
-    }
-  
-    function agregarProductoDesdeFormulario() {
-        var form = document.getElementById('formProducto');
-        var nombre = form.elements['nombre'].value; // Reemplaza 'nombre' con 'id_producto'
-        var precio = form.elements['precio_de_venta'].value; // Reemplaza el identificador 'precio' con 'precio_de_venta'
-        var cantidad = form.elements['cantidad'].value;
-  
-        agregarProducto(nombre, cantidad);
-    }
-  
-    function agregarProducto(nombre, precio, cantidad) {
-        var table = document.getElementById("tablaProductos");
-        var row = table.insertRow(-1);
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        var cell3 = row.insertCell(2);
-        var cell4 = row.insertCell(3);
-  
-        cell1.innerHTML = nombre;
-        cell3.innerHTML = cantidad;
-        cell4.innerHTML = precio * cantidad; // Agrega el cálculo del total
-    }
-    document.querySelector('#id_id_producto').addEventListener('change', function(e) {
-        var producto_id = e.target.value;  // Obtiene el valor del campo seleccionado
-        fetch(`/obtener_precio_producto/?producto_id=${producto_id}`)  // Realiza la solicitud a la vista de Django
-            .then(response => response.json())
-            .then(data => {
-                document.querySelector('#id_precio_de_venta').value = data.precio;  // Actualiza el campo de precio
+                // Aquí iría tu lógica para manejar el envío del formulario
+                // Por ejemplo, enviar la información mediante fetch()
             });
+        }
+
+        // Función para imprimir el ticket (asegúrate de que esta parte del código tenga sentido con tu lógica de aplicación)
+        function imprimirTicket(url) {
+            // Aquí iría tu lógica para imprimir el ticket
+        }
     });
-  </script>
-  
-  
-
-
+</script>
+    
+ 
 </body>
 </html>

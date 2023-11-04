@@ -1,8 +1,8 @@
 from django.urls import path
 from . import views 
 from django.contrib.auth import views as auth_views
-from django.urls import reverse_lazy
-
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 
@@ -13,7 +13,9 @@ urlpatterns = [
     path('devoluciones/', views.devoluciones , name='devoluciones'),
     path('ventas/', views.ventas),
     path('ventas/', views.ventas, name='ventas'),
+    path('mapa/', views.mapa),
     path('proveedores/',views.proveedores),
+    path('pedidos/', views.pedidos),
     path('cuenta/',views.cuenta),
     path('ventas_pdf/', views.ventas_pdf, name='ventas_pdf'),
     path('manage_account/', views.manage_account, name='manage_account'),
@@ -26,10 +28,13 @@ urlpatterns = [
      path('buscar_ventas/', views.buscar_ventas, name='buscar_ventas'),
      path('procesar_devolucion/<int:id_venta>/', views.procesar_devolucion, name='procesar_devolucion'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
+    path('añadir-producto/', views.añadir_producto, name='añadir_producto'),
+    path('editar-producto/',views.editar_producto, name="editar-producto"),
+    path('procesar-codigo/', views.procesar_codigo_barras, name='procesar_codigo'),
 
 
 
 
 
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
