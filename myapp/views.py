@@ -1,6 +1,6 @@
-from myapp.models import  Producto, Venta , Suministro, ProductoVenta, Devolucion
+from myapp.models import  Producto, Venta , Suministro, ProductoVenta, Devolucion, Cliente
 from django.shortcuts import render,redirect, get_object_or_404
-from .form import AñadirProductoForm, VentaForm, VentasProductoForm, Suministroform, DevolucionForm, BuscarVentaForm, UserRegistrationForm, UserUpdateForm, PasswordChangeForm, BuscarVentaForm
+from .form import AñadirProductoForm, VentaForm, VentasProductoForm, Suministroform, DevolucionForm, BuscarVentaForm, UserRegistrationForm, UserUpdateForm, PasswordChangeForm, BuscarVentaForm, ProductoStockForm
 from django.utils import timezone
 from io import BytesIO
 from reportlab.pdfgen import canvas
@@ -16,9 +16,76 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from reportlab.lib.units import inch
 from django.conf import settings
+from django.utils.safestring import mark_safe
 import requests
 import os
 
+
+def edit_stock(request, id_producto):
+
+    producto = get_object_or_404(Producto, id_producto=id_producto)
+
+    if request.method == 'POST':
+
+        form = ProductoStockForm(request.POST, instance=producto)
+
+        if form.is_valid():
+
+            form.save()
+
+            return redirect('lista_productos')
+
+    else:
+
+        form = ProductoStockForm(instance=producto)
+
+    return render(request, 'editar_producto.html', {'form': form})
+
+def cliente(request): 
+    Clientes = Cliente.objects.all()
+    if request.method == 'POST':
+        nombre = request.POST['nombre']
+        apellido = request.POST['apellido']
+        telefono = request.POST['telefono']
+        direccion = request.POST['direccion']
+        monto_de_credito = request.POST['credito']
+        clase = request.POST['clase']
+        
+        cliente = Cliente(nombre=nombre, apellido=apellido, numero_de_telefono=telefono, direccion=direccion, monto_de_credito =monto_de_credito, clase = clase)
+        cliente.save()
+        
+    return render(request,'clientes.html',{'clientes_list' : Clientes})
+
+
+
+def weather(request):
+
+    city = request.GET.get('city', None)
+
+    if city:
+
+        response = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid=cc7db6ea9bee720c92f312dc3c97c43a')
+
+        data = response.json()
+
+        if data['cod'] == '404':
+
+            return render(request, 'prueba.html', {'error': 'Ciudad no encontrada.'})
+
+        else:
+
+    
+
+            temp_in_celsius = data['main']['temp'] - 273.15
+
+            data['main']['temp'] = round(temp_in_celsius, 2) 
+
+
+            return render(request, 'prueba.html', {'city': city, 'data': data})
+
+    else:
+
+        return render(request, 'prueba.html', {'error': 'no encontrada.'})
 
 def ventas_pdf(request):
     buffer = BytesIO()
@@ -125,8 +192,6 @@ def ventas(request):
 
             # Deleting the ProductoVenta
             producto_venta.delete()
-
-            messages.success(request, f"Producto {producto.nombre} eliminado de la venta.")
             return redirect('ventas')
 
         elif action == 'add_product':
@@ -185,7 +250,7 @@ def ventas(request):
 
 def generar_ticket_pdf(venta, productos_venta):
     # Configurar el tamaño de la página para 58mm
-    page_width = 58 / 25.4 * inch  # Convertir mm a pulgadas, luego a puntos
+    page_width = 60 / 25.4 * inch  # Convertir mm a pulgadas, luego a puntos
     page_height = 11 * inch  # La longitud es variable
     page_size = (page_width, page_height)
 
@@ -199,13 +264,16 @@ def generar_ticket_pdf(venta, productos_venta):
     left_margin = 6  # 6 puntos es un pequeño margen pero visible en una impresora térmica
 
     # Dibuja el contenido del ticket con el margen izquierdo
-    p.drawString(left_margin, page_height - 40, "Puebla")
-    p.drawString(left_margin, page_height - 55, f"ID de Venta: {venta.id_venta}")
-    p.drawString(left_margin, page_height - 70, f"Fecha: {venta.fecha.strftime('%d/%m/%Y %H:%M')}")
-    p.drawString(left_margin, page_height - 90, "Productos:")
+    p.drawString(left_margin, page_height - 40, "Carniceria El Puebla")
+    p.drawString(left_margin, page_height - 55, "Telefono 9934304496")
+    p.drawString(left_margin, page_height - 70, f"ID de Venta: {venta.id_venta}")
+    p.drawString(left_margin, page_height - 85, f"Fecha: {venta.fecha.strftime('%d/%m/%Y %H:%M')}")
+    p.drawString(left_margin, page_height - 100, "Productos:   Peso   Subtotal")
+    p.drawString(left_margin, page_height - 110, "---------------------------------------")
+
 
     # Dibuja los productos ajustando el ancho
-    y_position = page_height - 105
+    y_position = page_height - 120
     for producto_venta in productos_venta:
         p.drawString(left_margin, y_position, f"{producto_venta.producto.nombre} - {producto_venta.cantidad_producto}kg - ${producto_venta.subtotal_producto}")
         y_position -= 15
@@ -620,6 +688,7 @@ from django.contrib import messages
 def procesar_codigo_barras(request):
     if request.method == 'POST':
         codigo_barras = request.POST.get('codigo_barras')
+        
         id_producto = int(codigo_barras[:6])
         peso = Decimal(int(codigo_barras[6:11])) / 100  # Convertir a kilogramos
         producto = get_object_or_404(Producto, pk=id_producto)

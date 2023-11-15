@@ -28,12 +28,6 @@
                 <li class="nav-item">
                     <a class="btn btn-primary nav-link" href="/proveedores">Proveedores</a>
                 </li>
-                <li class="nav-item">
-                    <a class="btn btn-primary nav-link" href="/cuenta">Cuenta</a>
-                </li>
-                <li>
-                    <a class="btn btn-primary nav-link" href="/mapa">Ventas</a>
-                </li>
             </ul>
     </div>
 </nav>
@@ -68,15 +62,16 @@
                                             <label for="cantidad_producto">Cantidad</label>
                                             <input type="decimal" class="form-control" id="cantidad_producto" name="txt-cantidad" step="0.01" pattern="^[0-9]+\.[0-9]{1,2}$">
                                             <br>
-                                        <div> <button type="submit" class="btn btn-primary">añadir</button> </div>
+                                        <div> <button type="/button" class="btn btn-primary">añadir</button> </div>
                                     </div>
                                 </form>
                                 <br>
 
-                                <form method="post" action="{% url 'procesar_codigo' %}">
+                                <form method="post" action="{% url 'procesar_codigo' %}" id="formularioo">
                                     {% csrf_token %}
-                                    <input type="text" name="codigo_barras" autofocus>
-                                    <button type="submit">Procesar Código de Barras</button>
+                                    <input type="text" name="codigo_barras" id="codigo_barras" autofocus>
+                                    <br>
+                                    <button type="submit" class = "btn btn.primary">Procesar Código de Barras</button>
                                 </form>
                                
                                 
@@ -159,27 +154,17 @@
     </div>
 </div>    
 
-<script>
-    
 
-        // Event listener para el formulario de cobro
-        var cobrarForm = document.querySelector('.total-venta form');
-        if (cobrarForm) {
-            cobrarForm.addEventListener('submit', function(event) {
-                event.preventDefault(); // Previenes el envío por defecto
-
-                // Aquí iría tu lógica para manejar el envío del formulario
-                // Por ejemplo, enviar la información mediante fetch()
-            });
-        }
-
-        // Función para imprimir el ticket (asegúrate de que esta parte del código tenga sentido con tu lógica de aplicación)
-        function imprimirTicket(url) {
-            // Aquí iría tu lógica para imprimir el ticket
-        }
-    });
-</script>
     
  
 </body>
+<script>
+    document.getElementById('formularioo').addEventListener('submit', function(event) {
+     var codigo_barras = document.getElementById('codigo_barras').value;
+     if (codigo_barras.length != 12) {
+        alert('Por favor, ingrese un código de barras de 12 caracteres.');
+        event.preventDefault(); // Previene que el formulario se envíe si el código de barras no está completo
+     }
+    });
+    </script>
 </html>

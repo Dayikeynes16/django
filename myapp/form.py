@@ -1,5 +1,5 @@
 from django import forms
-from .models import Producto, Venta, ProductoVenta, Suministro, Devolucion
+from .models import Producto, Venta, ProductoVenta, Suministro, Devolucion, Cliente
 from django.utils import timezone
 from django.contrib.auth.models import User
 class DateInput(forms.DateInput):
@@ -114,6 +114,10 @@ class FiltrarVentasForm(forms.Form):
     fecha_inicio = forms.DateField(label="Fecha de inicio", required=False, widget=DateInput())
     fecha_fin = forms.DateField(label="Fecha de fin", required=False, widget=DateInput())
 
+class ClienteForm(forms.ModelForm):
+    class Meta:
+        model = Cliente
+        fields = ['nombre', 'apellido', 'numero_de_telefono', 'direccion', 'monto_de_credito', 'clase']
     
 class BuscarVentaForm(forms.Form):
         model = Venta
@@ -121,3 +125,11 @@ class BuscarVentaForm(forms.Form):
         label='Buscar por id de venta',
         widget=forms.NumberInput(attrs={'placeholder': 'Introduce el ID de la venta'})
     )
+        
+class ProductoStockForm(forms.ModelForm):
+
+    class Meta:
+
+        model = Producto
+
+        fields = ['stock']

@@ -7,11 +7,27 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from datetime import datetime
 
-
     
 
 def generar_id_venta():
     return random.randint(10000, 99999)
+
+class Cliente(models.Model):
+
+    id_cliente = models.BigAutoField(primary_key=True)
+    CLIENTE_CLASSES = (
+        ('A', 'Cliente con descuentos'),
+        ('B', 'Cliente con precios diferenciales'),
+    )
+    nombre = models.CharField(max_length=200)
+    apellido = models.CharField(max_length=200)
+    numero_de_telefono = models.CharField(max_length=100)
+    direccion = models.TextField()
+    monto_de_credito = models.DecimalField(max_digits=10, decimal_places=2)
+    clase = models.CharField(max_length=1, choices=CLIENTE_CLASSES)
+    def __str__(self):
+
+        return self.nombre + ""
 
 
 
@@ -32,9 +48,10 @@ class Venta(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     abierta = models.BooleanField(default=True)
     METODOS_DE_PAGO = (
+        ('efectivo', 'Efectivo'),
     ('tarjeta', 'Tarjeta'),
     ('transferencia', 'Transferencia'),
-    ('efectivo', 'Efectivo'),
+    
 )
 
     metodo_de_pago = models.CharField(max_length=15, choices=METODOS_DE_PAGO, default='efectivo')
@@ -93,7 +110,7 @@ class Devolucion(models.Model):
     )
     razon = models.CharField(max_length=35, choices=RAZONES, default='otro')
     fecha = models.DateTimeField(default=timezone.now)
-    comentarios = models.TextField(blank=True, null=True)
+    comentarios = models.CharField(max_length=50)
     total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     
 
